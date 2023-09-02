@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "1056581796930",
+    "firebase_url": "https://malarify-f346a-default-rtdb.firebaseio.com",
+    "project_id": "malarify-f346a",
+    "storage_bucket": "malarify-f346a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1056581796930:android:d5901259eb8ec9895119db",
+        "android_client_info": {
+          "package_name": "com.frteiham"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1056581796930-d2hup0mfmqu84odhq82tn83fmt35out3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwvu1dduaWUYldgaQG3FCG-tWVR_BoOCo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1056581796930-d2hup0mfmqu84odhq82tn83fmt35out3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1056581796930:android:064f873f2640f5c45119db",
+        "android_client_info": {
+          "package_name": "com.frteiham.malarify"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1056581796930-d2hup0mfmqu84odhq82tn83fmt35out3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwvu1dduaWUYldgaQG3FCG-tWVR_BoOCo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1056581796930-d2hup0mfmqu84odhq82tn83fmt35out3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
