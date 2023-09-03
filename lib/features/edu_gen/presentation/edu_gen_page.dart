@@ -133,7 +133,7 @@ class _EduGenPageState extends State<EduGenPage> {
         body: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             mainAxisSize: MainAxisSize.max,
             children: [
               BlocBuilder<ImageCubit, ImageState>(
@@ -173,7 +173,6 @@ class _EduGenPageState extends State<EduGenPage> {
                           padding: const EdgeInsets.symmetric(vertical: 10.0),
                           child: Column(
                             children: [
-
                               Padding(
                                 padding: const EdgeInsets.all(10),
                                 child: SizedBox(
@@ -455,6 +454,26 @@ class _EduGenPageState extends State<EduGenPage> {
                   return Container();
                 },
               ),
+              if (generatedContent != null)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20 * 0.75,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: Text(
+                    generatedContent!,
+                    style: GoogleFonts.montserrat(
+                      textStyle: const TextStyle(
+                          color: Colors.deepOrange, fontSize: 19),
+                    ),
+                  ),
+                ),
+              ),
               if (generatedImageUrl != null)
                 Padding(
                   padding: const EdgeInsets.all(10.0),
@@ -499,7 +518,7 @@ class _EduGenPageState extends State<EduGenPage> {
                         color: Colors.orangeAccent,
                         headerText: 'Dall-E',
                         descriptionText:
-                        'Get inspired and stay creative with your personal assistant powered by Dall-E',
+                        'Get inspired and stay creative',
                       ),
                     ),
                     SlideInLeft(
