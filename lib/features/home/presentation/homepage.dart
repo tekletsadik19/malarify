@@ -1,5 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:malarify/features/data_vis/presentation/data_vis_page.dart';
+import 'package:malarify/features/detect_malaria/presentation/detect_malaria_page.dart';
+import 'package:malarify/features/profile/presentation/profile_page.dart';
 
 import 'feeds.dart';
 
@@ -36,10 +40,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         onPageChanged: navigationTapped,
         children:  [
           Feeds(),
-          Scaffold(),
-          Scaffold(),
-          Scaffold(),
-          Scaffold(),
+          DetectMalariaPage(),
+          DataVisualizePage(),
+          Profile(),
         ],
 
       ),
@@ -50,9 +53,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         activeColor: Theme.of(context).colorScheme.secondary,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.whatshot),),
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.search),),
-          BottomNavigationBarItem(icon: Icon(Icons.auto_stories),),
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.calendar_today),),
+          BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.earthAfrica),),
+          BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.heartCircleCheck),),
           BottomNavigationBarItem(icon: Icon(CupertinoIcons.person_solid),),
         ],
       ),

@@ -15,7 +15,7 @@ class AppTheme{
 
 
   static TextStyle get title1 => const TextStyle(
-    fontFamily: 'Sherlock',
+    fontFamily: 'Aeonik',
     fontWeight: FontWeight.w600,
     fontSize: 40,
   );
@@ -25,28 +25,28 @@ class AppTheme{
     fontSize: 22,
   );
   static TextStyle get title3 => const TextStyle(
-    fontFamily: 'Raleway',
+    fontFamily: 'Aeonik',
     fontWeight: FontWeight.w600,
     fontSize: 20,
   );
   static TextStyle get subtitle1 => const TextStyle(
-    fontFamily: 'Raleway',
+    fontFamily: 'Aeonik',
     fontWeight: FontWeight.w600,
     fontSize: 18,
 
   );
   static TextStyle get subtitle2 => const TextStyle(
-    fontFamily: 'Raleway',
+    fontFamily: 'Aeonik',
     fontWeight: FontWeight.w600,
     fontSize: 16,
   );
   static TextStyle get bodyText1 => const TextStyle(
-    fontFamily: 'Raleway',
+    fontFamily: 'Aeonik',
     fontWeight: FontWeight.w600,
     fontSize: 14,
   );
   static TextStyle get bodyText2 => const TextStyle(
-    fontFamily: 'Raleway',
+    fontFamily: 'Aeonik',
     fontWeight: FontWeight.w600,
     fontSize: 14,
   );
@@ -66,7 +66,7 @@ class AppTheme{
 
 
   static ThemeData lightTheme = ThemeData(
-    fontFamily: "Raleway",
+    fontFamily: "Aeonik",
     primaryColor: lightPrimary,
     canvasColor: lightSecondaryBG,
     textSelectionTheme: TextSelectionThemeData(

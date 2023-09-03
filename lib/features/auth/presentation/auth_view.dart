@@ -57,7 +57,7 @@ class _AuthViewStateState extends ConsumerState<AuthViewPage> with TickerProvide
               child: Align(
                 alignment: Alignment.topCenter,
                 child: Text(
-                  'Temari Hebret',
+                  'Malarify',
                   style: AppTheme.title1,
                 ),
               ),

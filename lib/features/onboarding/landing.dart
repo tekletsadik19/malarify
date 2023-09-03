@@ -58,26 +58,15 @@ class _LandingState extends State<Landing> with TickerProviderStateMixin{
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                40, 0, 40, 0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      8, 0, 0, 0),
-                                  child: Text(
-                                    'Temari Hebret',
-                                    style: AppTheme.title1,
-                                  ).animated([
-                                    animationsMap[
-                                    'textOnPageLoadAnimation1']!
-                                  ]),
-                                ),
-                              ],
+                            padding: EdgeInsets.only(top: 40),
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: Text(
+                                'Malarify',
+                                style: AppTheme.title1,
+                              ),
                             ),
                           ),
-
                           Padding(
                             padding: const EdgeInsetsDirectional.fromSTEB(
                                 40, 0, 40, 0),

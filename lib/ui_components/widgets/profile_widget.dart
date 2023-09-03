@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 
 
 class ProfileWidget extends StatelessWidget {
-  final ImageProvider imageProvider;
+  final Widget child;
   final bool isEdit;
   final VoidCallback onClicked;
 
   const ProfileWidget({
     Key? key,
-    required this.imageProvider,
     this.isEdit = false,
     required this.onClicked,
+    required this.child,
   }) : super(key: key);
 
   @override
@@ -19,33 +19,21 @@ class ProfileWidget extends StatelessWidget {
     final color = Theme.of(context).colorScheme.primary;
 
     return Center(
-      child: Stack(
-        children: [
-          buildImage(),
-          Positioned(
-            bottom: 0,
-            right: 4,
-            child: isEdit
-                ?buildEditIcon(color)
-                :Container(),
-          ),
-        ],
-      ),
+      child: buildImage(),
     );
   }
 
   Widget buildImage() {
-    final image = imageProvider;
-
     return ClipOval(
       child: Material(
         color: Colors.transparent,
-        child: Ink.image(
-          image: image,
-          fit: BoxFit.cover,
+        child: SizedBox(
           width: 128,
           height: 128,
-          child: InkWell(onTap: onClicked),
+          child: InkWell(
+              onTap: onClicked,
+              child: child,
+          ),
         ),
       ),
     );
