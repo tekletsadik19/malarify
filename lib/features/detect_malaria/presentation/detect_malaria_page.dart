@@ -2,8 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
-import '../../../core/utils/app_theme/constants.dart';
-import '../../../core/utils/responsive.dart';
+
 
 
 class DetectMalariaPage extends ConsumerStatefulWidget {

@@ -4,10 +4,16 @@ import 'package:brain_fusion/brain_fusion.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+import 'package:animate_do/animate_do.dart';
 import 'package:path/path.dart' as xp;
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import '../../../core/utils/strings.dart';
+import '../../../services/openai_service.dart';
+import '../../../ui_components/components/feature_box.dart';
 import '../bloc/app_directory_cubit.dart';
 import '../bloc/image_cubit.dart';
 import 'package:malarify/core/utils/app_locale.dart';
@@ -26,6 +32,14 @@ class _EduGenPageState extends State<EduGenPage> {
   late Directory directory;
   final TextEditingController _textEditingController = TextEditingController();
   var scaffoldKey = GlobalKey<ScaffoldState>();
+  final speechToText = SpeechToText();
+  final flutterTts = FlutterTts();
+  String lastWords = '';
+  final OpenAIService openAIService = OpenAIService();
+  String? generatedContent;
+  String? generatedImageUrl;
+  int start = 200;
+  int delay = 200;
 
   final Map<AIStyle, String> styleDisplayText = {
     AIStyle.noStyle: 'No style',
@@ -43,43 +57,44 @@ class _EduGenPageState extends State<EduGenPage> {
     AIStyle.pencilDrawing: 'Pencil drawing',
   };
 
-  Future<void> _saveImage(Uint8List canvas) async {
-    final String path = _appDirectoryCubit.state.path;
-    try {
-      if (path != pathHint) {
-        directory = Directory(path);
-        final appDir = Directory('${directory.path}/$app');
-        if (!(await appDir.exists())) {
-          await appDir.create();
-        }
-        final image =
-        '''IMG-${DateTime.now().day.toString()}-${DateTime.now().month.toString()}-${DateTime.now().year.toString()}--${DateTime.now().hour.toString()}-${DateTime.now().minute.toString()}-${DateTime.now().millisecond.toString()}-logo.jpeg''';
-        final filePath = xp.join(appDir.path, image);
-        final file = File(filePath);
-        await file.writeAsBytes(canvas).whenComplete(() {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content:
-              Text('${translation(context).imageWasSaved} : $filePath'),
-              elevation: 10,
-            ),
-          );
-        });
-      } else {
-        _choosePath();
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('when save image : $e');
-      }
-      _choosePath();
-    }
+
+
+  Future<void> initTextToSpeech() async {
+    await flutterTts.setSharedInstance(true);
+    setState(() {});
   }
+
+  Future<void> initSpeechToText() async {
+    await speechToText.initialize();
+    setState(() {});
+  }
+
+  Future<void> startListening() async {
+    await speechToText.listen(onResult: onSpeechResult);
+    setState(() {});
+  }
+
+  Future<void> stopListening() async {
+    await speechToText.stop();
+    setState(() {});
+  }
+
+  void onSpeechResult(SpeechRecognitionResult result) {
+    setState(() {
+      lastWords = result.recognizedWords;
+    });
+  }
+  Future<void> systemSpeak(String content) async {
+    await flutterTts.speak(content);
+  }
+
 
   @override
   void initState() {
     super.initState();
     _imageCubit = ImageCubit();
+    initSpeechToText();
+    initTextToSpeech();
     _appDirectoryCubit = context.read<AppDirectoryCubit>()..loadPath();
   }
 
@@ -87,6 +102,8 @@ class _EduGenPageState extends State<EduGenPage> {
   void dispose() {
     _imageCubit.close();
     _textEditingController.dispose();
+    speechToText.stop();
+    flutterTts.stop();
     super.dispose();
   }
 
@@ -116,101 +133,14 @@ class _EduGenPageState extends State<EduGenPage> {
         body: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.max,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.75,
-                      child: TextField(
-                        autofocus: false,
-                        controller: _textEditingController,
-                        decoration: InputDecoration(
-                          hintText:
-                          translation(context).putAnythingInYourMind,
-                          labelText:
-                          translation(context).putAnythingInYourMind,
-                          border: const OutlineInputBorder(),
-                          suffixIcon: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _textEditingController.clear();
-                              });
-                            },
-                            icon: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Icon(
-                                Icons.clear,
-                                color:
-                                Theme.of(context).colorScheme.secondary,
-                              ),
-                            ),
-                          ),
-                        ),
-                        onChanged: (text) {
-                          if (text.isEmpty) {
-                            setState(() {
-                              _textEditingController.clear();
-                            });
-                          }
-                        },
-                        onSubmitted: (query) {
-                          if (query.isNotEmpty) {
-                            if (FocusScope.of(context).hasFocus) {
-                              FocusScope.of(context).unfocus();
-                            }
-                            setState(() {
-                              _textEditingController.text = query;
-                            });
-                            _chooseStyle(_textEditingController.text);
-                          }
-                        },
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(7),
-                      ),
-                      width: MediaQuery.of(context).size.width * 0.20,
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                          shape: MaterialStateProperty.all<
-                              RoundedRectangleBorder>(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(7),
-                            ),
-                          ),
-                        ),
-                        onPressed: () {
-                          if (_textEditingController.text.isNotEmpty) {
-                            FocusScope.of(context).unfocus();
-                            _chooseStyle(_textEditingController.text);
-                          }
-                        },
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 14.0),
-                            child: SizedBox(
-                              height: 32,
-                              width: 32,
-                              child: Lottie.asset('assets/lottie/generate_edu.json'),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               BlocBuilder<ImageCubit, ImageState>(
                 builder: (context, state) {
                   if (state is ImageLoading) {
                     return Center(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           SizedBox(
@@ -374,16 +304,6 @@ class _EduGenPageState extends State<EduGenPage> {
                                   ),
                                 ),
                               ),
-                              SizedBox(
-                                width:
-                                MediaQuery.of(context).size.height * 0.7,
-                                child: FadeInImage(
-                                  placeholder: const AssetImage(
-                                      'assets/images/Ai.png'),
-                                  image: MemoryImage(image),
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
                             ],
                           ),
                         );
@@ -453,16 +373,6 @@ class _EduGenPageState extends State<EduGenPage> {
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              SizedBox(
-                                width:
-                                MediaQuery.of(context).size.height * 0.7,
-                                child: FadeInImage(
-                                  placeholder: const AssetImage(
-                                      'assets/images/Ai.png'),
-                                  image: MemoryImage(image),
-                                  fit: BoxFit.contain,
                                 ),
                               ),
                             ],
@@ -542,26 +452,167 @@ class _EduGenPageState extends State<EduGenPage> {
                       }
                     }
                   }
-                  if (state is ImageError) {
-                    final error = state.error;
-                    if (kDebugMode) {
-                      print(error);
-                    }
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(50.0),
-                        child: Text(
-                          "${translation(context).failed} .${translation(context).noResultFound}",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
+                  return Container();
+                },
+              ),
+              if (generatedImageUrl != null)
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.network(generatedImageUrl!),
+                  ),
+                ),
+              SlideInLeft(
+                child: Visibility(
+                  visible: generatedContent == null && generatedImageUrl == null,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    alignment: Alignment.centerLeft,
+                    margin: const EdgeInsets.only(top: 10, left: 22),
+                    child: Text(
+                      'What Malarify Could do',
+                      style: GoogleFonts.montserrat(
+                        textStyle: const TextStyle(
+                            color: Color(0xFF39CBC3), fontSize: 19),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Visibility(
+                visible: generatedContent == null && generatedImageUrl == null,
+                child: Column(
+                  children: [
+                    SlideInLeft(
+                      delay: Duration(milliseconds: start),
+                      child: const FeatureBox(
+                        color: Colors.orangeAccent,
+                        headerText: 'ChatGPT',
+                        descriptionText:
+                        'A smarter way to stay organized and informed with ChatGPT',
+                      ),
+                    ),
+                    SlideInLeft(
+                      delay: Duration(milliseconds: start + delay),
+                      child: const FeatureBox(
+                        color: Colors.orangeAccent,
+                        headerText: 'Dall-E',
+                        descriptionText:
+                        'Get inspired and stay creative with your personal assistant powered by Dall-E',
+                      ),
+                    ),
+                    SlideInLeft(
+                      delay: Duration(milliseconds: start + 2 * delay),
+                      child: const FeatureBox(
+                        color: Colors.orangeAccent,
+                        headerText: 'Smart Voice Assistant',
+                        descriptionText:
+                        'Generate Malaria info with voice assistant powered '
+                            'by Dall-E and ChatGPT',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  boxShadow: [
+                    BoxShadow(
+                      offset: const Offset(0, 4),
+                      blurRadius: 32,
+                      color: const Color(0xFF087949).withOpacity(0.08),
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  child: Row(
+                    children: [
+                      InkWell(
+                        child: const Icon(Icons.mic, color: Color(0xFF00BF6D)),
+                        onTap: ()async{
+                          if (await speechToText.hasPermission &&
+                          speechToText.isNotListening) {
+                            await startListening();
+                          } else if (speechToText.isListening) {
+                            final speech = await openAIService.isArtPromptAPI(lastWords);
+                            if (speech.contains('https')) {
+                              generatedImageUrl = speech;
+                              generatedContent = null;
+                              setState(() {});
+                            } else {
+                              generatedImageUrl = null;
+                              generatedContent = speech;
+                              setState(() {});
+                              await systemSpeak(speech);
+                            }
+                            await stopListening();
+                          } else {
+                            initSpeechToText();}
+                        },
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Container(
+                          padding:  const EdgeInsets.symmetric(
+                            horizontal: 20 * 0.75,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00BF6D).withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(40),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _textEditingController,
+                                  decoration: const InputDecoration(
+                                    hintText: "Generate Educative Malaria Info",
+                                    border: InputBorder.none,
+                                  ),
+                                  onChanged: (text) {
+                                    if (text.isEmpty) {
+                                      setState(() {
+                                        _textEditingController.clear();
+                                      });
+                                    }
+                                  },
+                                  onSubmitted: (query)async {
+                                    if (query.isNotEmpty) {
+                                      if (FocusScope.of(context).hasFocus) {
+                                        FocusScope.of(context).unfocus();
+                                      }
+                                      setState(() {
+                                        _textEditingController.text = query;
+                                      });
+                                      final res = await openAIService.isArtPromptAPI(query);
+                                      if (res.contains('https')) {
+                                        generatedImageUrl = res;
+                                        generatedContent = null;
+                                        setState(() {});
+                                      } else {
+                                        generatedImageUrl = null;
+                                        generatedContent = res;
+                                        setState(() {});
+                                        await systemSpeak(res);
+                                      }
+                                      await stopListening();
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    );
-                  }
-                  return Container();
-                },
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -606,6 +657,7 @@ class _EduGenPageState extends State<EduGenPage> {
                 }).toList(),
               ),
             ),
+
           ],
         );
       },
@@ -634,5 +686,38 @@ class _EduGenPageState extends State<EduGenPage> {
         );
       },
     );
+  }
+
+  Future<void> _saveImage(Uint8List canvas) async {
+    final String path = _appDirectoryCubit.state.path;
+    try {
+      if (path != pathHint) {
+        directory = Directory(path);
+        final appDir = Directory('${directory.path}/$app');
+        if (!(await appDir.exists())) {
+          await appDir.create();
+        }
+        final image =
+        '''IMG-${DateTime.now().day.toString()}-${DateTime.now().month.toString()}-${DateTime.now().year.toString()}--${DateTime.now().hour.toString()}-${DateTime.now().minute.toString()}-${DateTime.now().millisecond.toString()}-logo.jpeg''';
+        final filePath = xp.join(appDir.path, image);
+        final file = File(filePath);
+        await file.writeAsBytes(canvas).whenComplete(() {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+              Text('${translation(context).imageWasSaved} : $filePath'),
+              elevation: 10,
+            ),
+          );
+        });
+      } else {
+        _choosePath();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('when save image : $e');
+      }
+      _choosePath();
+    }
   }
 }
